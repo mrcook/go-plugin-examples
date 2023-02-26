@@ -1,0 +1,6 @@
+# Ignore binaries
+counter
+counter-go-grpc
+
+# and test kv file
+kv_hello

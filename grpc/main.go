@@ -37,7 +37,14 @@ func main() {
 	}
 
 	// Request the plugin
-	raw, err := rpcClient.Dispense("kv_grpc")
+	var pluginType string
+	switch os.Getenv("KV_PLUGIN") {
+	case "./kv-go-netrpc":
+		pluginType = "kv"
+	default:
+		pluginType = "kv_grpc"
+	}
+	raw, err := rpcClient.Dispense(pluginType)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 		os.Exit(1)
