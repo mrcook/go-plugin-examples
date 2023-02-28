@@ -25,7 +25,7 @@ When `Get` is called, the contents of the `kv_` file is printed to the terminal.
 ### plugin-*
 
 The `plugin-go-grpc` and `plugin-python` plugins both communicate over gRPC,
-while `plugin-go-netrpc` communicates over net/rcp.
+while `plugin-go-netrpc` communicates over net/rpc.
 
 You will need Python installed on your system to run the `plugin-python` example.
 
@@ -38,7 +38,7 @@ plugin authors for creating `KVStore` plugins. It provides the `KVPluginGRPC`,
 which is an implementation of the `plugin.GRPCPlugin`, and `KVPluginRPC`, which
 is an implementation of the `plugin.Plugin`. These are used by `go-plugin` to
 provide communication between the host application and plugins using either
-gRPC or net/rcp.
+gRPC or net/rpc.
 
 ### proto
 
