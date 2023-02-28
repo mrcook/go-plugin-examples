@@ -1,3 +1,6 @@
+// A plugin example of type KVStore, which communicates over gRPC.
+//
+// Copyright (c) Michael R. Cook.
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
@@ -5,34 +8,47 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/hashicorp/go-plugin"
 
-	"github.com/mrcook/go-plugin-examples/grpc/shared"
+	"github.com/mrcook/go-plugin-examples/grpc/sdk"
 )
 
-// Here is a real implementation of KV that writes to a local file with
-// the key name and the contents are the value of the key.
-type KV struct{}
+// the files for this plugin use the prefix:
+const filenamePrefix = "kv_grpc_"
 
-func (KV) Put(key string, value []byte) error {
+// GrpcPlugin is our custom plugin: it's a real implementation of the KVStore
+// plugin type that writes to a local file with the key name and the contents
+// are the value of the key.
+type GrpcPlugin struct{}
+
+// Put will overwrite the file contents with the new key/value data.
+func (GrpcPlugin) Put(key string, value []byte) error {
 	value = []byte(fmt.Sprintf("%s\n\nWritten from plugin-go-grpc", string(value)))
-	return ioutil.WriteFile("kv_"+key, value, 0644)
+	return os.WriteFile(filenamePrefix+key, value, 0644)
 }
 
-func (KV) Get(key string) ([]byte, error) {
-	return ioutil.ReadFile("kv_" + key)
+// Get reads the file and returns the value stored for the matching key.
+func (GrpcPlugin) Get(key string) ([]byte, error) {
+	return os.ReadFile(filenamePrefix + key)
 }
 
+// go-plugin's are normal Go applications so require a main entry point.
+// Once the host application has loaded (dispensed) the plugin, go-plugin will
+// start the plugin, and manage its full lifecycle.
 func main() {
-	plugin.Serve(&plugin.ServeConfig{
-		HandshakeConfig: shared.Handshake,
-		Plugins: map[string]plugin.Plugin{
-			"kv": &shared.KVGRPCPlugin{Impl: &KV{}},
-		},
+	// Assign our plugin as the required plugin type.
+	plugins := plugin.PluginSet{
+		sdk.KVStoreGrpcPluginName: &sdk.KVPluginGRPC{Impl: &GrpcPlugin{}},
+	}
 
-		// A non-nil value here enables gRPC serving for this plugin...
+	// start listening for incoming gRPC requests.
+	plugin.Serve(&plugin.ServeConfig{
+		HandshakeConfig: sdk.HandshakeConfig,
+		Plugins:         plugins,
+
+		// A non-nil value here enables gRPC serving for this plugin.
 		GRPCServer: plugin.DefaultGRPCServer,
 	})
 }
