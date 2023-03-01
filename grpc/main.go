@@ -55,7 +55,7 @@ func main() {
 	// Configure a new plugin client:
 	// - HandshakeConfig: is required
 	// - Plugins: is a map containing the supported plugins and their plugin.Plugin implementations
-	// - Cmd: points to the compiled binary of your plugin (set via an ENV)
+	// - Cmd: points to the compiled binary of your plugin
 	// - AllowedProtocols: by default only net/rpc is allowed, so add gRPC support
 	pluginClient := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig:  sdk.HandshakeConfig,
@@ -83,7 +83,7 @@ func main() {
 	// As Dispense() returns an interface, we need to cast it to the plugin
 	// type supported by the host application, which in our case is a KV store.
 	// This feels like a normal interface implementation, but is in fact
-	// communicating over an net/rpc connection.
+	// communicating over an RPC connection.
 	kv := raw.(sdk.KVStore)
 
 	// Call the appropriate method based on that requested by the user.

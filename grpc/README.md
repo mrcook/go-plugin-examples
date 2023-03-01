@@ -17,8 +17,8 @@ Along with the example plugin implementations, a plugin SDK is provided for the
 Is the "host" application code.
 
 A new client is created that can communicate over both gRPC and net/rpc.
-Depending on the value set for the `KV_PLUGIN` environment variable, one of the
-three plugins is loaded and a request made to its `Get` or `Put` method.
+Depending on the CLI flag set, one of the three plugins is loaded and a request
+made to its `Get` or `Put` method.
 
 When `Get` is called, the contents of the `kv_` file is printed to the terminal.
 
@@ -59,33 +59,24 @@ make clean     # remove all binaries and kv_* store files.
 ```
 
 The application accepts two commands: `get` and `put`. The `put` command takes
-two arguments: a _key_ and a _value_. The key will be appended to the filename,
-while the value will be saved to that file.
+two arguments: a _key_ and a string _value_. The key will be appended to the
+filename, while the value will be saved to that file.
 
 Each plugin has its own filename prefix, e.g. `plugin-go-grpc` uses `kv_grpc_`.
-
-To run the application using a specific plugin you will need to set the
-`KV_PLUGIN` environment variable.
 
 Here's a full example using the `plugin-go-grpc` plugin:
 
 ```sh
-# This tells the app (KV store binary) to use the "kv-go-grpc" plugin binary
-$ export KV_PLUGIN="./kv-go-grpc"
-
 # Writes to the file: kv_grpc_hello
-$ ./app put hello "big wide world"
+$ ./app --grpc put hello "big wide world"
 
-$ ./app get hello
+$ ./app --grpc get hello
 big wide world
 
 Written from plugin-go-grpc
 ```
 
-The other two plugins can be used by setting `KV_PLUGIN` appropriately:
-
-* `export KV_PLUGIN="./kv-go-netrpc"`
-* `export KV_PLUGIN="python plugin-python/plugin.py"`
+The other plugins can be used by changing `--grpc` to either `--rpc` or `--python`.
 
 
 ## LICENSE

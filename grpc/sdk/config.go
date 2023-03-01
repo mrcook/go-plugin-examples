@@ -18,5 +18,5 @@ var HandshakeConfig = plugin.HandshakeConfig{
 
 	// Once set, these magic cookie values should NEVER be changed.
 	MagicCookieKey:   "GRPC_PLUGIN", // a unique key for your application
-	MagicCookieValue: "grpc",        // a random 256-bit value
+	MagicCookieValue: "grpc",        // a random 256-bit value is recommended
 }

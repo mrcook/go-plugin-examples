@@ -61,14 +61,15 @@ func (_ *KVPluginRPC) Client(_ *plugin.MuxBroker, c *rpc.Client) (interface{}, e
 	return &rpcClient{client: c}, nil
 }
 
-// KVPluginGRPC is the implementation of plugin.GRPCPlugin used to serve and
+// KVPluginGRPC is the implementation of plugin.Plugin used to serve and
 // consume gRPC plugins of type KVStore.
 //
 // Both host applications and plugins use this implementation when they assign
 // their gRPC plugins, i.e. via the `pluginMap`.
 //
 // NOTE: ignore GRPCBroker. That is used to create more multiplexed streams on
-// our plugin connection and is a more advanced use case.
+// our plugin connection and is a more advanced use case, e.g. bi-directional
+// communication.
 type KVPluginGRPC struct {
 	// GRPCPlugin must still implement the Plugin interface
 	plugin.Plugin
