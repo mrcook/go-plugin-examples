@@ -1,5 +1,3 @@
-*.pyc
-kv
+app
 kv-*
-kv_*
-!kv_*.py
+kv_store_*

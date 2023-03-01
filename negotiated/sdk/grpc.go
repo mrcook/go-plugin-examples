@@ -1,7 +1,8 @@
+// Copyright (c) Michael R. Cook.
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-package shared
+package sdk
 
 import (
 	"golang.org/x/net/context"
@@ -9,10 +10,10 @@ import (
 	"github.com/mrcook/go-plugin-examples/negotitated/proto"
 )
 
-// GRPCClient is an implementation of KV that talks over RPC.
-type GRPCClient struct{ client proto.KVClient }
+// GRPCClient is an implementation of KVStore that talks over RPC.
+type grpcClient struct{ client proto.KVClient }
 
-func (m *GRPCClient) Put(key string, value []byte) error {
+func (m *grpcClient) Put(key string, value []byte) error {
 	_, err := m.client.Put(context.Background(), &proto.PutRequest{
 		Key:   key,
 		Value: value,
@@ -20,32 +21,26 @@ func (m *GRPCClient) Put(key string, value []byte) error {
 	return err
 }
 
-func (m *GRPCClient) Get(key string) ([]byte, error) {
+func (m *grpcClient) Get(key string) ([]byte, error) {
 	resp, err := m.client.Get(context.Background(), &proto.GetRequest{
 		Key: key,
 	})
 	if err != nil {
 		return nil, err
 	}
-
 	return resp.Value, nil
 }
 
-// Here is the gRPC server that GRPCClient talks to.
-type GRPCServer struct {
-	// This is the real implementation
-	Impl KV
+// GRPCServer is the gRPC server that GRPCClient talks to.
+type grpcServer struct {
+	Impl KVStore
 }
 
-func (m *GRPCServer) Put(
-	ctx context.Context,
-	req *proto.PutRequest) (*proto.Empty, error) {
+func (m *grpcServer) Put(_ context.Context, req *proto.PutRequest) (*proto.Empty, error) {
 	return &proto.Empty{}, m.Impl.Put(req.Key, req.Value)
 }
 
-func (m *GRPCServer) Get(
-	ctx context.Context,
-	req *proto.GetRequest) (*proto.GetResponse, error) {
+func (m *grpcServer) Get(_ context.Context, req *proto.GetRequest) (*proto.GetResponse, error) {
 	v, err := m.Impl.Get(req.Key)
 	return &proto.GetResponse{Value: v}, err
 }
