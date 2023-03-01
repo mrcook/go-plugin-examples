@@ -28,11 +28,8 @@ filename, while the number will be added to that already present in the file.
 Here's a full example:
 
 ```sh
-# This tells the app to use the plugin binary
-$ export COUNTER_PLUGIN="./counter-go-grpc"
-
-$ ./app put socks 2
-$ ./app get socks
+./app put socks 2
+./app get socks
 ```
 
 ## LICENSE

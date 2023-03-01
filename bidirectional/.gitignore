@@ -1,6 +1,6 @@
 # Ignore binaries
-counter
+app
 counter-go-grpc
 
 # and test kv file
-kv_hello
+kv_store_*
