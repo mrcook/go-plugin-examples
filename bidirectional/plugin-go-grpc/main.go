@@ -1,3 +1,4 @@
+// Copyright (c) Michael R. Cook.
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
@@ -5,46 +6,56 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 
 	"github.com/hashicorp/go-plugin"
 
-	"github.com/mrcook/go-plugin-examples/bidirectional/shared"
+	"github.com/mrcook/go-plugin-examples/bidirectional/sdk"
 )
 
-// Here is a real implementation of KV that writes to a local file with
-// the key name and the contents are the value of the key.
-type Counter struct {
+// The KV store filename prefix for this plugin.
+const filenamePrefix = "kv_store_"
+
+// CounterPlugin is our custom plugin: it's a real implementation of the
+// CounterStore plugin type that updates and reads the number value stored
+// in the local file.
+type CounterPlugin struct{}
+
+// storeData presents the JSON data stored in the local file.
+type storeData struct {
+	Value int64 `json:"value"`
 }
 
-type data struct {
-	Value int64
-}
-
-func (k *Counter) Put(key string, value int64, a shared.AddHelper) error {
+// Put adds the given number to that stored in the file matching the key.
+// Before writing the data an RPC request is made to the host application
+// using the sdk.AddHelper.
+func (k *CounterPlugin) Put(key string, value int64, adder sdk.AddHelper) error {
 	v, _ := k.Get(key)
 
-	r, err := a.Sum(v, value)
+	// Request the host application to add the two numbers. This feels like a
+	// normal method call but is in fact over an RPC connection.
+	r, err := adder.Sum(v, value)
 	if err != nil {
 		return err
 	}
 
-	buf, err := json.Marshal(&data{r})
+	buf, err := json.Marshal(&storeData{r})
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile("kv_"+key, buf, 0644)
+	return os.WriteFile(filenamePrefix+key, buf, 0644)
 }
 
-func (k *Counter) Get(key string) (int64, error) {
-	dataRaw, err := ioutil.ReadFile("kv_" + key)
+// Get reads the file for matching the key and returns the value stored therein.
+func (k *CounterPlugin) Get(key string) (int64, error) {
+	fileContents, err := os.ReadFile(filenamePrefix + key)
 	if err != nil {
 		return 0, err
 	}
 
-	data := &data{}
-	err = json.Unmarshal(dataRaw, data)
+	data := &storeData{}
+	err = json.Unmarshal(fileContents, data)
 	if err != nil {
 		return 0, err
 	}
@@ -52,14 +63,21 @@ func (k *Counter) Get(key string) (int64, error) {
 	return data.Value, nil
 }
 
+// go-plugin's are normal Go applications so require a main entry point.
+// Once the host application has loaded (dispensed) the plugin, go-plugin will
+// start the plugin, and manage its full lifecycle.
 func main() {
-	plugin.Serve(&plugin.ServeConfig{
-		HandshakeConfig: shared.Handshake,
-		Plugins: map[string]plugin.Plugin{
-			"counter": &shared.CounterPlugin{Impl: &Counter{}},
-		},
+	// Assign our plugin as the required plugin type.
+	plugins := plugin.PluginSet{
+		sdk.CounterPluginName: &sdk.CounterPlugin{Impl: &CounterPlugin{}},
+	}
 
-		// A non-nil value here enables gRPC serving for this plugin...
+	// start listening for incoming gRPC requests.
+	plugin.Serve(&plugin.ServeConfig{
+		HandshakeConfig: sdk.HandshakeConfig,
+		Plugins:         plugins,
+
+		// A non-nil value here enables gRPC serving for this plugin.
 		GRPCServer: plugin.DefaultGRPCServer,
 	})
 }

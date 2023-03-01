@@ -1,48 +1,44 @@
-# Counter Example
+# Bi-directional gRPC HashiCorp go-plugin Example
 
 This example builds a simple key/counter store CLI where the mechanism
 for storing and retrieving keys is pluggable. However, in this example we don't
-trust the plugin to do the summation work. We use bi-directional plugins to
-call back into the main proccess to do the sum of two numbers. To build this example:
+trust the plugin to do the summation work, so we use bi-directional plugins to
+call back into the main process to do the sum of two numbers.
+
+The plugin implementation communicates over gRPC.
+
+## Usage
+
+A `Makefile` is provide for ease of use. Running `make` will compile both the
+host application and plugin, and then run the application with some example
+requests.
+
+Additional make commands:
 
 ```sh
-# This builds the main CLI
-$ go build -o counter
-
-# This builds the plugin written in Go
-$ go build -o counter-go-grpc ./plugin-go-grpc
-
-# This tells the Counter binary to use the "counter-go-grpc" binary
-$ export COUNTER_PLUGIN="./counter-go-grpc"
-
-# Read and write
-$ ./counter put hello 1
-$ ./counter put hello 1
-
-$ ./counter get hello
-2
+make build  # build the app and plugin binaries
+make pbuf   # re-generate the protocol buffers
+make clean  # remove all binaries and store files.
 ```
 
-### Plugin: plugin-go-grpc
+The application accepts two commands: `get` and `put`. The `put` command takes
+two arguments: a _key_ and a number _value_. The key will be appended to the
+filename, while the number will be added to that already present in the file.
 
-This plugin uses gRPC to serve a plugin that is written in Go:
-
-```
-# This builds the plugin written in Go
-$ go build -o counter-go-grpc ./plugin-go-grpc
-
-# This tells the KV binary to use the "kv-go-grpc" binary
-$ export COUNTER_PLUGIN="./counter-go-grpc"
-```
-
-## Updating the Protocol
-
-If you update the protocol buffers file, you can regenerate the file
-using the following command from this directory. You do not need to run
-this if you're just trying the example.
-
-For Go:
+Here's a full example:
 
 ```sh
-$ protoc -I proto/ proto/kv.proto --go_out=plugins=grpc:proto/
+# This tells the app to use the plugin binary
+$ export COUNTER_PLUGIN="./counter-go-grpc"
+
+$ ./app put socks 2
+$ ./app get socks
 ```
+
+## LICENSE
+
+All new code and documentation, copyright (c) 2023 Michael R. Cook.
+
+Based on the examples from https://github.com/hashicorp/go-plugin, copyright (c) HashiCorp, Inc.
+
+SPDX-License-Identifier: MPL-2.0
