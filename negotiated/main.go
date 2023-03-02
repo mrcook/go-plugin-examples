@@ -7,6 +7,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -19,23 +20,22 @@ import (
 )
 
 func main() {
-	// Initialize an array of versioned plugins that can be dispensed.
+	// Fetch the plugin version, command, key, and value from the CLI args.
+	args := parseFlags()
+
+	// Initialize the array of versioned plugins that can be dispensed.
 	plugins := map[int]plugin.PluginSet{}
 
 	// Both versions can be supported, but switch the implementation to
 	// demonstrate version negotiation.
-	switch os.Getenv("KV_PROTO") {
-	case "netrpc":
+	if args.pluginVersion == 2 {
 		plugins[2] = plugin.PluginSet{
 			sdk.KVStorePluginName: &sdk.KVPluginRPC{},
 		}
-	case "grpc":
+	} else if args.pluginVersion == 3 {
 		plugins[3] = plugin.PluginSet{
 			sdk.KVStorePluginName: &sdk.KVPluginGRPC{},
 		}
-	default:
-		fmt.Println("must set KV_PROTO to netrpc or grpc")
-		os.Exit(1)
 	}
 
 	// Configure a new plugin client:
@@ -61,7 +61,7 @@ func main() {
 	}
 
 	// Request the plugin.
-	raw, err := client.Dispense("kv")
+	raw, err := client.Dispense(sdk.KVStorePluginName)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 		os.Exit(1)
@@ -73,10 +73,8 @@ func main() {
 	// communicating over an RPC connection.
 	kv := raw.(sdk.KVStore)
 
-	os.Args = os.Args[1:]
-	switch os.Args[0] {
-	case "get":
-		result, err := kv.Get(os.Args[1])
+	if args.command == "get" {
+		result, err := kv.Get(args.key)
 		if err != nil {
 			fmt.Println("Error:", err.Error())
 			os.Exit(1)
@@ -84,15 +82,53 @@ func main() {
 
 		// Let's see what the plugin returns!
 		fmt.Println(string(result))
-	case "put":
-		err := kv.Put(os.Args[1], []byte(os.Args[2]))
+	} else if args.command == "put" {
+		err := kv.Put(args.key, []byte(args.value))
 		if err != nil {
 			fmt.Println("Error:", err.Error())
 			os.Exit(1)
 		}
-	default:
-		fmt.Println("Please only use 'get' or 'put'")
+	}
+}
+
+// Contains all the data required to run the application.
+type cliArgs struct {
+	pluginVersion int    // the plugin version to use
+	command       string // get or put command
+	key           string // custom key name (appended to the KV store filename)
+	value         string // comment to be saved in the file
+}
+
+func parseFlags() cliArgs {
+	pluginVersion := flag.Int("plugin", 3, "Plugin version to use: 2 (net/rpc) or 3 (gRPC)")
+	flag.Parse()
+
+	if *pluginVersion < 2 || *pluginVersion > 3 {
+		fmt.Println("plugin version must be 2 or 3")
 		os.Exit(1)
+	}
+
+	command := flag.Arg(0)
+	if command != "get" && command != "put" {
+		fmt.Printf("invalid command, must be 'get' or 'put', given '%s'\n", command)
+		os.Exit(1)
+	}
+
+	key := flag.Arg(1)
+	value := flag.Arg(2)
+	if len(key) == 0 {
+		fmt.Println("key must be present")
+		os.Exit(1)
+	} else if command == "put" && len(value) == 0 {
+		fmt.Println("value must be provide with the 'put' command")
+		os.Exit(1)
+	}
+
+	return cliArgs{
+		pluginVersion: *pluginVersion,
+		command:       command,
+		key:           key,
+		value:         value,
 	}
 }
 

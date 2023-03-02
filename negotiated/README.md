@@ -37,10 +37,10 @@ Here's a full example:
 
 ```sh
 # Write a value using proto version 3 and gRPC
-KV_PROTO=grpc ./app put hello "Planet Earth"
+./app --plugin=3 put hello "Planet Earth"
 
 # Read it back using proto version 2 and net/rpc
-KV_PROTO=netrpc ./app get hello
+./app --plugin=2 get hello
 Planet Earth
 
 Written from plugin version 3

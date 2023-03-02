@@ -3,8 +3,8 @@ all: build run
 
 .PHONY: run
 run:
-	KV_PROTO=grpc ./app put hello "big wide world"
-	KV_PROTO=netrpc ./app get hello
+	./app --plugin=3 put hello "big wide world"
+	./app --plugin=2 get hello
 
 .PHONY: build
 build:
