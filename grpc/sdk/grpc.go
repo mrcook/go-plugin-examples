@@ -5,7 +5,7 @@
 package sdk
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/mrcook/go-plugin-examples/grpc/proto"
 )
