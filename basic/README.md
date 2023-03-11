@@ -2,29 +2,18 @@
 
 A simple example of a `go-plugin` plugin that communicates over net/rpc.
 
-## The code
-
 This example contains the host application code, the example plugin
 implementation, along with a plugin SDK that is used by the host application
 and plugin for communicating with the `Greeter` plugin type.
 
-### main.go
-
-Is the "host" application code.
-
-A new net/rpc client is created for the for the `hello_plugin_example` and once
-configured, a request is made to the plugins `Greet` method.
-
-The returned message along with all logs are printed to `os.Stderr`.
-
-### hello_plugin_example
+## hello_plugin_example
 
 An example plugin.
 
 This contains `HelloGreeterPlugin`, a real implementation of the `Greeter`
 plugin type, and a `main` function entry point.
 
-### sdk
+## sdk
 
 The Plugin Software Development Kit.
 

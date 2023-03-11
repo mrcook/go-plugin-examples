@@ -6,13 +6,7 @@ for storing and retrieving keys is pluggable.
 Three plugin implementations are provided: two that communicate over gRPC, and
 one that uses net/rpc.
 
-
-## The code
-
-Along with the example plugin implementations, a plugin SDK is provided for the
-`KVStore` plugin type, which is used by the host application and plugins.
-
-### main.go
+## main.go
 
 Is the "host" application code.
 
@@ -22,14 +16,14 @@ made to its `Get` or `Put` method.
 
 When `Get` is called, the contents of the `kv_` file is printed to the terminal.
 
-### plugin-*
+## plugin-*
 
 The `plugin-go-grpc` and `plugin-python` plugins both communicate over gRPC,
 while `plugin-go-netrpc` communicates over net/rpc.
 
 You will need Python installed on your system to run the `plugin-python` example.
 
-### sdk
+## sdk
 
 The Plugin Software Development Kit.
 
