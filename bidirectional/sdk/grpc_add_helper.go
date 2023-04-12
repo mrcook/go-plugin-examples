@@ -31,6 +31,8 @@ func (c *grpcAddHelperClient) Sum(a, b int64) (int64, error) {
 
 // grpcAddHelperServer is the gRPC server that grpcAddHelperClient talks to.
 type grpcAddHelperServer struct {
+	proto.UnimplementedAddHelperServer // enable forward-compatibility
+
 	Impl AddHelper
 }
 

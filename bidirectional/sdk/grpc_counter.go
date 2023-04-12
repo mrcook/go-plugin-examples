@@ -56,6 +56,8 @@ func (c *grpcCounterClient) Get(key string) (int64, error) {
 
 // grpcCounterServer is the gRPC server that grpcCounterClient talks to.
 type grpcCounterServer struct {
+	proto.UnimplementedCounterServer // enable forward-compatibility
+
 	Impl CounterStore
 
 	broker *plugin.GRPCBroker

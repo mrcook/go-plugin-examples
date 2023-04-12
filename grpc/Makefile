@@ -12,11 +12,16 @@ pbufs: pbufs-go pbufs-py
 
 .PHONY: pbufs-go
 pbufs-go:
-	protoc -I proto/ proto/kv.proto --go_out=plugins=grpc:proto/
+	protoc ./proto/kv.proto \
+		--go_out=. \
+		--go-grpc_out=. \
+		--go_opt=paths=source_relative \
+		--go-grpc_opt=paths=source_relative \
+		--proto_path=.
 
 .PHONY: pbufs-py
 pbufs-py:
-	python -m grpc_tools.protoc -I ./proto/ --python_out=./plugin-python/ --grpc_python_out=./plugin-python/ ./proto/kv.proto
+	python -m grpc_tools.protoc -I./proto/ --python_out=./plugin-python/ --pyi_out=./plugin-python/ --grpc_python_out=./plugin-python/ ./proto/kv.proto
 
 .PHONY: clean
 clean:

@@ -13,7 +13,12 @@ build:
 
 .PHONY: pbuf
 pbuf:
-	protoc -I proto/ proto/kv.proto --go_out=plugins=grpc:proto/
+	protoc ./proto/kv.proto \
+		--go_out=. \
+		--go-grpc_out=. \
+		--go_opt=paths=source_relative \
+		--go-grpc_opt=paths=source_relative \
+		--proto_path=.
 
 .PHONY: clean
 clean:
